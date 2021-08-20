@@ -1,65 +1,77 @@
-# radius-eap-tls
+# EAP TLS authentication
 
-[FreeRADIUS](https://github.com/FreeRADIUS/freeradius-server/) with only EAP-TLS enabled.
+This helps quick setup EAP TLS for testing WPA2-Enterprise EAP TLS and WPA3-Enterprise EAP TLS (GCMP256).  
+[FreeRadius](https://github.com/FreeRADIUS/freeradius-server) service it.
 
-This may be useful if you want to use AES on your WiFi.
+## Usage
 
-# Usage
+* Radius is listening on port 1812 UDP.
+* A secret for Radius server connection is `symbol123`
+    * It usually set it at Access Point.
+* A password for all private key is `symbol`
+    * It will be asked when install client certificate `pc.p12`
 
-See [below](#simple-setup) for a quick way to create your [PKI](https://en.wikipedia.org/wiki/Public_key_infrastructure) or [supply your own](#configuration), then run:
+### Install client cert and CA to client machine/device
 
-```
-docker run -d -p 1812:1812/udp --restart=always -v pki:/etc/raddb/certs -e CLIENT_ADDRESS=... -e CLIENT_SECRET=... -e PRIVATE_KEY_PASSWORD=... evansgp/radius-eap-tls
-```
+#### Windows
 
-# Configuration
+Install cert and CA by double click `pc.p12` then double click `ca.crt`. And goto Control Panel > All Control Panel Items > Network and Sharing Center > Manually connect or Network.  
+**Network name** should be SSID (if use EAP TLS auth for wireless client). **Security type** `WPA2-Enterprise` even want to test `WPA3-Enterprise`. Later can change it to `WPA3-Enterprise`.   
 
-Keys and certificates are read from /etc/raddb/certs which is exposed as a volume.
+**WPA3-Enterprise allowed only EAP-TLS and PMF mandatory.**  
+Thus, must select `Microsoft: Smart Card or other certification` at Choose a network authentication method:.  
+At Setting tick belows;
 
-Radius is listening on port 1812 UDP.
+* Use a certificate on this computer
+* Use simple certificate selection(Recommended)
+* Verify the server's identity by validating the certificate
+* Trusted Root Certification Authorities
+    * AWASLab  "which installed at previously as ca.crt"
+    * pc  "which installed at previously as pc.p12"
 
-The following environment variables are used:
+### Linux
 
-- CLIENT_ADDRESS, where to accept connections from (i.e. your AP) (mandatory)
-- CLIENT_SECRET, the password shared with your AP (mandatory)
-- PRIVATE_KEY_PASSWORD, password for the private key (mandatory)
-- PRIVATE_CERT, the filename of the private cert (default: issued/server.crt)
-- PRIVATE_KEY, filename of the private key (default: private/server.key)
-- CA_CERT, filename of the CA certificate (default: ca.crt)
-- DH_FILE, filename of the DH parameters (default: dh.pem)
+#### WPA3-Enterprise (GCMP256 EAP TLS)
 
-# Simple setup
+`sudo wpa_supplicant -dd -c ./wpa3_supplicant.conf -i wlo1`
 
-Running the following will create each file not already present in the volume, prompting for input where required and leaving things in the [default](#configuration) locations:
-- CA certificate and key
-- DH parameters
-- Server certificate and key
-- Client certificate and key for an entity named `laptop`
+wlo1 is wireless interface. `ssid` is vary, change to AP's. 
+
+Need to test. My current machine does not support it yet.
 
 ```bash
-git clone git@github.com:evansgp/docker-radius-eap-tls.git
+Successfully initialized wpa_supplicant
+Line 10: invalid key_mgmt 'WPA-EAP-SUITE-B-192'
+Line 10: no key_mgmt values configured.
+Line 10: failed to parse key_mgmt 'WPA-EAP-SUITE-B-192'.
+Line 23: failed to parse network block.
+Failed to read or parse configuration '/home/tknv/src/docker-radius-eap-tls/./wpa3_supplicant.conf'.
+```
+
+#### WPA2-Enterprise (EAP TLS)
+
+`sudo wpa_supplicant -dd -c ./wpa2_supplicant.conf -i wlo1`
+
+wlo1 is wireless interface. `ssid` is vary, change to AP's. 
+
+### Run EAP TLS auth service
+
+```bash
+git clone https://github.com/tknv/docker-radius-eap-tls.git
 cd docker-radius-eap-tls
-docker build easyrsa -t easyrsa
-docker run -it -v pki:/easyrsa/pki easyrsa build-client-full laptop
+docker-compose up
 ```
 
-Repeat for as many clients as you need, supplying a unique name each time. Copy the `ca.crt`, `issued/laptop.crt` and `private/laptop.key` to the client (for e.g.). Some devices require their keys in a different format, for example Android OS, which you can export using:
+## Configuration
 
-```bash
-docker run -it -v pki:/easyrsa/pki easyrsa build-client-full android-phone
-docker run -it -v pki:/easyrsa/pki easyrsa export-p12 android-phone
-```
+No configuration at all.
 
-Import `private/android-phone.p12` to your device.
-
-Now configure your AP with WPA2 Enterprise, AES, the server IP and client secret.
-
-# See also
+## See also
 
 [easy-rsa](https://github.com/OpenVPN/easy-rsa/) can quickly generate your certificates and keys.
 
-# WARNING WARNING WARNING
+This docker-radius-eap-tls is forked from  [evansgp/docker-radius-eap-tls](https://github.com/evansgp/docker-radius-eap-tls).
 
-This probably isn't secure and will most likely rape your dogs and kill your women.
+## WARNING
 
-Look after your PKI.
+This is for lab use only. **Not secure at all.**

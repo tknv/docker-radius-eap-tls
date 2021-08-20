@@ -4,11 +4,11 @@ eap {
 
 	tls-config tls-common {
 
-		private_key_password = $ENV{PRIVATE_KEY_PASSWORD}
-		private_key_file = ${certdir}/$ENV{PRIVATE_KEY}
-		certificate_file = ${certdir}/$ENV{PRIVATE_CERT}
-		ca_file = ${cadir}/$ENV{CA_CERT}
-		dh_file = ${certdir}/$ENV{DH_FILE}
+		private_key_password = "symbol"
+		private_key_file = ${certdir}/server.key
+		certificate_file = ${certdir}/server.crt
+		ca_file = ${cadir}/ca.crt
+		dh_file = ${certdir}/dh.pem
 		ca_path = ${cadir}
 		cipher_list = "HIGH"
 		ecdh_curve = "prime256v1"
