@@ -3,6 +3,16 @@
 This helps quick setup EAP TLS for testing WPA2-Enterprise EAP TLS and WPA3-Enterprise EAP TLS (GCMP256).  
 [FreeRadius](https://github.com/FreeRADIUS/freeradius-server) service it.
 
+## Quick start
+
+```bash
+git clone https://github.com/tknv/docker-radius-eap-tls.git EAP-TLS_FreeRadius
+cd EAP-TLS_FreeRadius
+docker-compose up
+```
+
+Install Root CA and client cert by double click(usually) `pc.p12` and `ca.crt` in EAP-TLS_FreeRadius directory.
+
 ## Usage
 
 * Radius is listening on port 1812 UDP.
